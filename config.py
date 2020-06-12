@@ -10,7 +10,8 @@ from os.path import join, dirname
 from pathlib import Path 
 import datetime as datetime
 import warnings
-
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 
 api_key_id = os.getenv('ALPACA_API_KEY')
 api_secret_key = os.getenv('ALPACA_SECRET_KEY')
@@ -39,6 +40,33 @@ rand = {'AAPL': {
     'sell': 250,
     'shares': 1
 }}
+
+
+def get_volume_leaders(limit = 100):
+    limit = min(limit,100)
+    site_dict = {
+        'symbol': 1, 
+        'volume': 8
+    }
+    options = Options()
+    options.headless = True
+    securities = {}
+    #options.add_argument("--window-size=1920,1200")
+
+    driver = webdriver.Chrome(options=options, executable_path='../chromedriver')
+    driver.get("https://www.barchart.com/stocks/most-active/daily-volume-leaders")
+    # first tr is rows(100), second td is columns(9)
+    tickers = []
+    companies = []
+    for i in range(1,limit):
+        asset = driver.find_element_by_xpath('//*[@id="main-content-column"]/div/div[5]/div/div[2]/div/div/ng-transclude/table/tbody/tr[{}]/td[{}]/div'.format(i,site_dict['symbol'])).text
+        volume = driver.find_element_by_xpath('//*[@id="main-content-column"]/div/div[5]/div/div[2]/div/div/ng-transclude/table/tbody/tr[{}]/td[{}]/div'.format(i,site_dict['volume'])).text
+        securities[asset] = volume
+    driver.quit()
+    return securities
+
+
+
 
 
 russell_3000 = ['A',
