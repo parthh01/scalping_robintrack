@@ -21,6 +21,9 @@ endpoint_url = 'https://paper-api.alpaca.markets'
 api = alpaca.REST(api_key_id,api_secret_key,base_url=endpoint_url, api_version='v2')
 
 
+alpaca_universe = [asset.symbol for asset in api.list_assets(status='active') if asset.tradable]
+
+
 def get_sp_tickers():
     url = 'https://www.slickcharts.com/sp500'
     response = requests.get(url,headers = {'User-Agent':'Mozilla/5.0'}) 
@@ -40,6 +43,18 @@ rand = {'AAPL': {
     'sell': 250,
     'shares': 1
 }}
+
+def get_highest_volume_etfs():
+    url = 'https://etfdb.com/compare/volume/'
+    response = requests.get(url,headers = {'User-Agent':'Mozilla/5.0'}) 
+    soup = BeautifulSoup(response.text,'html.parser')
+    rows = soup.findAll('tr')[1:]
+    tickers = {}
+    for row in rows: 
+        tickers[row.findAll('td')[0].text] = row.findAll('td')[2].text 
+    return tickers
+
+
 
 
 def get_volume_leaders(limit = 100):
